@@ -2,53 +2,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:proact/backend.dart';
-import 'package:proact/result.dart';
 import 'package:proact/state_management.dart';
 
-import 'second_page.dart';
+import 'result.dart';
 
-void main() {
-  runApp(MaterialApp(
-    home: MyApp(),
-    debugShowCheckedModeBanner: false,
-  ));
-}
-
-class MyApp extends StatelessWidget {
-  MyApp({Key? key}) : super(key: key);
-
-  Questions questions = Get.put(Questions());
-  SpecificQuestions specificQuestionsList = Get.put(SpecificQuestions());
+class SecondPage extends StatefulWidget {
+  const SecondPage({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    return HomePage();
-  }
+  State<SecondPage> createState() => _SecondPageState();
 }
 
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+class _SecondPageState extends State<SecondPage> {
+  SpecificQuestions questions = Get.find();
 
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  Questions questions = Get.find();
-
-  int count = 0;
+  int count = 1;
 
   @override
   void initState() {
-    displayCommonQuestions();
+    displaySpecificQuestions();
     super.initState();
   }
 
-  List<int> a_list = [];
+  List<int> b_list = [];
 
   List<int> no_of_options = [5, 5, 6, 4, 3, 3, 4, 4, 4];
 
   int? selectedIndex;
+
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
@@ -56,6 +37,10 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: Text(
           "ProAct",
           style: TextStyle(color: Colors.white),
@@ -88,7 +73,7 @@ class _HomePageState extends State<HomePage> {
                 ),
                 Flexible(
                   child: Text(
-                    questions.commonQuestions.value[count],
+                    specificQuestionsList.specificQuestions.value[count - 1],
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -97,14 +82,18 @@ class _HomePageState extends State<HomePage> {
                 ),
                 ListView.builder(
                     shrinkWrap: true,
-                    itemCount: no_of_options[count],
+                    itemCount: (specificQuestionsList.specificResponses.value
+                            .indexOf("${count + 1}") -
+                        specificQuestionsList.specificResponses.value
+                            .indexOf("${count}") -
+                        1),
                     itemBuilder: (context, index) {
                       return OptionCard(
-                          questions.commonResponses.value[questions
-                                  .commonResponses.value
-                                  .indexOf("${count + 1}") +
-                              1 +
-                              index],
+                          specificQuestionsList.specificResponses.value[
+                              specificQuestionsList.specificResponses.value
+                                      .indexOf("${count}") +
+                                  1 +
+                                  index],
                           index);
                     }),
               ],
@@ -123,33 +112,37 @@ class _HomePageState extends State<HomePage> {
                     });
                   },
                   child: Container(
+                    child: Icon(Icons.arrow_back_ios_new),
                     width: 50,
                     height: 50,
-                    child: Icon(Icons.arrow_back_ios_new),),
+                  ),
                 ),
                 InkWell(
+                  child: Container(
+                    child: Icon(Icons.arrow_forward_ios),
+                    width: 50,
+                    height: 50,
+                  ),
                   onTap: () {
                     setState(() {
                       count = count + 1;
                       selectedIndex = null;
                     });
-                    if (count > 8) {
-                      calculate_score_of_commonQuestions(a_list);
+                    print(
+                        "questionNo is ${specificQuestionsList.questionNo.value}");
+                    if (count > specificQuestionsList.questionNo.value - 1) {
+                      print("bcskcbksdvbsdkvbdskvsdvs");
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (_) {
-                            return SecondPage();
+                            return ResultPage();
                           },
                         ),
                       );
                     }
                   },
-                  child: Container(
-                    width: 50,
-                    height: 50,
-                    child:Icon(Icons.arrow_forward_ios),
-                ))
+                )
               ],
             ),
           )
@@ -161,7 +154,7 @@ class _HomePageState extends State<HomePage> {
   Widget OptionCard(String text, int itemIndex) {
     return InkWell(
       onTap: () {
-        a_list.add(itemIndex);
+        b_list.add(itemIndex);
         print("this index is tapped $itemIndex");
         setState(() {
           selectedIndex = itemIndex;
